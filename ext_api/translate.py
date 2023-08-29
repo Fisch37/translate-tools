@@ -125,7 +125,7 @@ def identify_invalid_sequence(
 
 def translate_sequenced(
         query: str,
-        sequence: Iterable[Language]
+        sequence: list[Language]
     ) -> str:
     """
     Translates a query through a sequence of languages.
@@ -164,3 +164,47 @@ def translate_sequenced(
         except Exception as e:
             raise TranslationFailedError(from_lang,to_lang,query) from e
     return query
+
+def split_into_parts(text: str, target_length: int) -> list[str]:
+    """
+    Splits a given string into segments that are each shorter or exactly
+    <target_length>. 
+    Splitting will attempt to seperate on linebreaks or whitespaces 
+    if possible, but will split on arbitrary characters when required.
+    """
+    paragraphs = [""]
+    parsable_lines = text.splitlines(keepends=True)
+    while len(parsable_lines) > 0:
+        current_line = parsable_lines.pop(0)
+        if len(current_line) + len(paragraphs[-1]) <= target_length:
+            paragraphs[-1] += current_line
+        elif len(current_line) <= target_length:
+            paragraphs.append(current_line)
+        else:
+            new_paragraph, remaining_segments = _join_up_to_length(
+                current_line.split(" "),
+                " ",
+                target_length
+            )
+            if len(new_paragraph) == 0:
+                paragraphs.append(current_line[:target_length])
+                parsable_lines.insert(0,current_line[target_length:])
+            else:
+                paragraphs.append(new_paragraph)
+                parsable_lines.insert(0," ".join(remaining_segments))
+    return paragraphs
+
+def _join_up_to_length(
+        segments: list[str], 
+        join_char: str,
+        length: int,
+        /
+    ) -> tuple[str, list[str]]:
+    """"""
+    result = ""
+    used_join_char = ""
+    while len(segments) > 0 \
+        and len(result) + len(used_join_char) + len(segments[0]) <= length:
+        result += used_join_char + segments.pop(0)
+        used_join_char = join_char
+    return result, segments
