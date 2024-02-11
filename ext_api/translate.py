@@ -101,7 +101,7 @@ def get_random_sequence(
         try:
             chosen_node = choice(next_nodes)
         except IndexError as e:
-            raise KeyError(f"Encountered dead branch whilst generating random sequence")
+            raise KeyError(f"Encountered dead branch whilst generating random sequence") from e
         try:
             return [start] + get_random_sequence(
                 chosen_node,
