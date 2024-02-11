@@ -1,8 +1,10 @@
-from argostranslate.translate import Language 
 from typing import TypeVar, Self
 from collections.abc import Generator
-from argostranslate.translate import ITranslation
-Translation = TypeVar("Translation",ITranslation,covariant=True)
+from random import choice
+
+from argostranslate.translate import Language, ITranslation
+
+Translation = TypeVar("Translation", bound=ITranslation)
 
 class TranslationFailedError(RuntimeError):
     """
