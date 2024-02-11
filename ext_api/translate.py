@@ -1,5 +1,5 @@
-from argostranslate.translate import translate, Language 
-from typing import Iterable, TYPE_CHECKING, TypeVar
+from argostranslate.translate import Language 
+from typing import TypeVar, Self
 from collections.abc import Generator
 from argostranslate.translate import ITranslation
 Translation = TypeVar("Translation",ITranslation,covariant=True)
@@ -30,6 +30,10 @@ class TranslationFailedError(RuntimeError):
             self.from_lang = from_lang
             self.to_lang = to_lang
             self.query = query
+    
+    @classmethod
+    def from_tuple(cls, langs: tuple[Language, Language], query: str) -> Self:
+        return cls(langs[0], langs[1], query)
 
 class InvalidTranslationError(TranslationFailedError): 
     """
@@ -118,10 +122,10 @@ def identify_invalid_sequence(
 
     `None` if no invalid translation was found.
     """
-    for i, (translation, (from_lang, to_lang)) \
+    for i, (translation, langs) \
         in enumerate(iterate_translate_sequence(sequence)):
         if translation is None:
-            return i, (from_lang, to_lang)
+            return i, langs
 
 def translate_sequenced(
         query: str,
@@ -155,14 +159,13 @@ def translate_sequenced(
     + `TranslationFailedError`
         A translation attempt failed due to a non-specific reason.
     """
-    for translation, (from_lang, to_lang) \
-        in iterate_translate_sequence(sequence):
+    for translation, langs in iterate_translate_sequence(sequence):
         if translation is None:
-            raise InvalidTranslationError(from_lang,to_lang,query) 
+            raise InvalidTranslationError.from_tuple(langs, query) 
         try:
             query = translation.translate(query)
         except Exception as e:
-            raise TranslationFailedError(from_lang,to_lang,query) from e
+            raise TranslationFailedError.from_tuple(langs, query) from e
     return query
 
 def split_into_parts(text: str, target_length: int) -> list[str]:
