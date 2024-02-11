@@ -1,8 +1,10 @@
 from typing import TypeVar, Self
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from random import choice
 
 from argostranslate.translate import Language, ITranslation
+
+from ext_api.helpers import ensure_language, LanguageOrStr
 
 Translation = TypeVar("Translation", bound=ITranslation)
 
@@ -57,7 +59,10 @@ class InvalidTranslationError(TranslationFailedError):
 def get_random_sequence(
         start: Language, 
         end: Language, 
-        steps: int
+        steps: int,
+        *,
+        disabled_languages: Sequence[LanguageOrStr] = (),
+        allow_self_translation: bool=True
     ) -> list[Language]:
     """
     Generates a random sequence starting at <start> going over 
@@ -76,20 +81,35 @@ def get_random_sequence(
         not counted as one of these, however the ending is.
         In a translation this would be the number of translations.
     """
-    next_nodes = [t.to_lang for t in start.translations_from]
+    disabled_languages_set = set(ensure_language(l) for l in disabled_languages)
+    next_nodes = [
+        t.to_lang
+        for t in start.translations_from
+        if t.to_lang not in disabled_languages_set
+    ]
     if steps == 1:
         if end in next_nodes:
             return [end]
         else:
             raise KeyError(f"Cannot reach end {end} from {start}")
     
+    if not allow_self_translation:
+        try:
+            next_nodes.remove(start)
+        except ValueError: ...
     while True:
         try:
             chosen_node = choice(next_nodes)
         except IndexError as e:
             raise KeyError(f"Encountered dead branch whilst generating random sequence")
         try:
-            return [start] + get_random_sequence(chosen_node, end, steps - 1)
+            return [start] + get_random_sequence(
+                chosen_node,
+                end,
+                steps - 1,
+                disabled_languages=disabled_languages,
+                allow_self_translation=allow_self_translation
+            )
         except KeyError:
             next_nodes.remove(chosen_node)
             continue
