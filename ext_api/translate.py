@@ -87,7 +87,7 @@ def get_random_sequence(
         for t in start.translations_from
         if t.to_lang not in disabled_languages_set
     ]
-    if steps == 1:
+    if steps == 0:
         if end in next_nodes:
             return [end]
         else:
