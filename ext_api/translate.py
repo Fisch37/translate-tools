@@ -4,7 +4,7 @@ from random import choice
 
 from argostranslate.translate import Language, ITranslation
 
-from ext_api.helpers import ensure_language, LanguageOrStr
+from ext_api.helpers import ensure_code, LanguageOrStr
 
 Translation = TypeVar("Translation", bound=ITranslation)
 
@@ -81,11 +81,11 @@ def get_random_sequence(
         not counted as one of these, however the ending is.
         In a translation this would be the number of translations.
     """
-    disabled_languages_set = set(ensure_language(l) for l in disabled_languages)
+    disabled_languages_set = set(ensure_code(l) for l in disabled_languages)
     next_nodes = [
         t.to_lang
         for t in start.translations_from
-        if t.to_lang not in disabled_languages_set
+        if t.to_lang.code not in disabled_languages_set
     ]
     if steps == 0:
         if end in next_nodes:

@@ -33,6 +33,18 @@ def ensure_language(lang_or_code: LanguageOrStr) -> Language:
     else: 
         return lang_or_code
 
+def ensure_code(lang_or_code: LanguageOrStr) -> str:
+    """
+    Returns the code of the language that was passed in.
+    Language codes are passed through as-is.
+    
+    This function is the inverse of `ensure_language`.
+    """
+    if isinstance(lang_or_code, Language):
+        return lang_or_code.code
+    else:
+        return lang_or_code
+
 
 def split_into_parts(text: str, target_length: int) -> list[str]:
     """
