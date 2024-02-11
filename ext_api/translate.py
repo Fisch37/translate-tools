@@ -76,12 +76,28 @@ def get_random_sequence(
         not counted as one of these, however the ending is.
         In a translation this would be the number of translations.
     """
-    raise NotImplementedError
+    next_nodes = [t.to_lang for t in start.translations_from]
+    if steps == 1:
+        if end in next_nodes:
+            return [end]
+        else:
+            raise KeyError(f"Cannot reach end {end} from {start}")
+    
+    while True:
+        try:
+            chosen_node = choice(next_nodes)
+        except IndexError as e:
+            raise KeyError(f"Encountered dead branch whilst generating random sequence")
+        try:
+            return [start] + get_random_sequence(chosen_node, end, steps - 1)
+        except KeyError:
+            next_nodes.remove(chosen_node)
+            continue
 
 def iterate_translate_sequence(
         sequence: list[Language]
     ) -> Generator[
-        tuple[Translation|None, tuple[Language, Language]], 
+        tuple[ITranslation|None, tuple[Language, Language]], 
         None, 
         None
     ]:
