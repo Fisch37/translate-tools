@@ -5,6 +5,9 @@ from os import environ
 from pathlib import Path
 from sys import exit, stdin, stderr
 from typing import Iterable
+from shutil import get_terminal_size
+
+from tqdm import tqdm
 
 from ext_api.helpers import ProgressCounter, ensure_language
 from ext_api.translate import get_random_sequence
@@ -106,7 +109,10 @@ jamble_translate.add_argument(
 
 
 def progress_callback(progress: ProgressCounter):
-    print(f"\r{progress.state}/{progress.end}", end="", flush=True)
+    tqdm(
+        total=progress.end,
+        bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}",
+    ).update(progress.state)
 
 def iterate_through_files(path: Path):
     for subpath in filter(lambda p: p.is_file(), path.iterdir()):
