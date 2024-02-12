@@ -165,6 +165,19 @@ def identify_invalid_sequence(
         if translation is None:
             return i, langs
 
+def _translate_sequence_part(
+    query: str,
+    translation: ITranslation|None,
+    langs: tuple[Language, Language]
+):
+    # A single step in the translate sequence. Raises all the appropriate errors
+    if translation is None:
+        raise InvalidTranslationError.from_tuple(langs, query) 
+    try:
+        return translation.translate(query)
+    except Exception as e:
+        raise TranslationFailedError.from_tuple(langs, query) from e
+
 def translate_sequenced(
         query: str,
         sequence: list[Language]
@@ -198,10 +211,5 @@ def translate_sequenced(
         A translation attempt failed due to a non-specific reason.
     """
     for translation, langs in iterate_translate_sequence(sequence):
-        if translation is None:
-            raise InvalidTranslationError.from_tuple(langs, query) 
-        try:
-            query = translation.translate(query)
-        except Exception as e:
-            raise TranslationFailedError.from_tuple(langs, query) from e
+        query = _translate_sequence_part(query, translation, langs)
     return query
