@@ -1,3 +1,5 @@
+from typing import Callable, Self
+
 from argostranslate.translate import get_installed_languages, Language
 
 LanguageOrStr = Language|str
@@ -89,3 +91,26 @@ def _join_up_to_length(
         result += used_join_char + segments.pop(0)
         used_join_char = join_char
     return result, segments
+
+
+class ProgressCounter:
+    def __init__(
+        self,
+        start: int=0,
+        /,
+        end: int|None=None,
+        *,
+        callback: Callable[[Self], None]|None=None
+    ):
+        self._counter = start
+        self.end = end
+        self._callback = callback
+    
+    @property
+    def state(self):
+        return self._counter
+    
+    def increment(self):
+        self._counter += 1
+        if self._callback is not None:
+            self._callback(self)
