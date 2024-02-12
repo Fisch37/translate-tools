@@ -3,7 +3,7 @@ from argostranslate.translate import get_installed_languages, Language
 LanguageOrStr = Language|str
 
 
-def get_lang_from_code(code: str) -> Language:
+def get_lang_from_code(code: str, /) -> Language:
     """
     Returns a Language object matching the passed code.
     
@@ -18,7 +18,7 @@ def get_lang_from_code(code: str) -> Language:
     except StopIteration as e:
         raise ValueError(f"Invalid language code {code}") from e
 
-def ensure_language(lang_or_code: LanguageOrStr) -> Language:
+def ensure_language(lang_or_code: LanguageOrStr, /) -> Language:
     """
     Returns a Language object if a code was passed
     or the input otherwise.
@@ -33,7 +33,7 @@ def ensure_language(lang_or_code: LanguageOrStr) -> Language:
     else: 
         return lang_or_code
 
-def ensure_code(lang_or_code: LanguageOrStr) -> str:
+def ensure_code(lang_or_code: LanguageOrStr, /) -> str:
     """
     Returns the code of the language that was passed in.
     Language codes are passed through as-is.
